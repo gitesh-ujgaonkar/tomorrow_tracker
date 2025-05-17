@@ -35,6 +35,12 @@ export function LoginForm() {
     setIsLoading(true)
 
     try {
+      // Show loading toast
+      toast({
+        title: "Signing in",
+        description: "Verifying your credentials...",
+      })
+
       const result = await signIn("credentials", {
         email: values.email,
         password: values.password,
@@ -42,20 +48,44 @@ export function LoginForm() {
       })
 
       if (result?.error) {
+        console.error("Login error:", result.error)
+        
+        // Provide specific error messages based on the error
+        let errorMessage = "Invalid email or password";
+        
+        if (result.error.includes("user-not-found")) {
+          errorMessage = "No account found with this email. Please check your email or register.";
+        } else if (result.error.includes("wrong-password")) {
+          errorMessage = "Incorrect password. Please try again.";
+        } else if (result.error.includes("too-many-requests")) {
+          errorMessage = "Too many unsuccessful login attempts. Please try again later.";
+        } else if (result.error.includes("network-request-failed")) {
+          errorMessage = "Network error. Please check your internet connection.";
+        } else if (result.error.includes("configuration-not-found")) {
+          errorMessage = "Authentication configuration error. Please contact support.";
+        }
+        
         toast({
-          title: "Error",
-          description: "Invalid email or password",
+          title: "Login Failed",
+          description: errorMessage,
           variant: "destructive",
         })
         return
       }
 
+      // Success toast
+      toast({
+        title: "Success",
+        description: "You've been signed in successfully!",
+      })
+      
       router.push("/dashboard")
       router.refresh()
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Login exception:", error)
       toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
+        title: "Login Error",
+        description: error.message || "Something went wrong. Please try again.",
         variant: "destructive",
       })
     } finally {

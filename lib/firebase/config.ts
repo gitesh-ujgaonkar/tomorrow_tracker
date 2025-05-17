@@ -37,9 +37,9 @@ const firebaseConfig = {
 }
 
 // Initialize Firebase with error handling
-let app;
-let auth;
-let db;
+let app: ReturnType<typeof getApp> | null = null;
+let auth: ReturnType<typeof getAuth> | null = null;
+let db: ReturnType<typeof getFirestore> | null = null;
 
 try {
   app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
@@ -55,8 +55,8 @@ try {
 }
 
 // Initialize Firebase Cloud Messaging and get a reference to the service
-let messaging: any = null
-if (typeof window !== "undefined") {
+let messaging: ReturnType<typeof getMessaging> | null = null
+if (typeof window !== "undefined" && app) {
   try {
     messaging = getMessaging(app)
   } catch (error) {

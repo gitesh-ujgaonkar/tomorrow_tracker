@@ -38,8 +38,20 @@ export function RegisterForm() {
     setIsLoading(true)
 
     try {
+      // Show a loading toast
+      toast({
+        title: "Creating account",
+        description: "Please wait while we set up your account...",
+      })
+
       // Create user in Firebase
       await createUserWithEmailAndPassword(values.email, values.password, values.name)
+
+      // Show success toast
+      toast({
+        title: "Account created",
+        description: "Your account has been created successfully!",
+      })
 
       // Sign in the user
       const result = await signIn("credentials", {
@@ -50,19 +62,27 @@ export function RegisterForm() {
 
       if (result?.error) {
         toast({
-          title: "Error",
-          description: "Failed to sign in after registration",
+          title: "Sign-in Error",
+          description: result.error || "Failed to sign in after registration. Please try logging in manually.",
           variant: "destructive",
         })
+        // Redirect to login page if sign-in fails after registration
+        router.push("/login")
         return
       }
 
+      // Success - redirect to dashboard
+      toast({
+        title: "Success",
+        description: "You're now signed in!",
+      })
       router.push("/dashboard")
       router.refresh()
     } catch (error: any) {
+      console.error("Registration error:", error)
       toast({
-        title: "Error",
-        description: error.message || "Failed to create account",
+        title: "Registration Error",
+        description: error.message || "Failed to create account. Please try again.",
         variant: "destructive",
       })
     } finally {
