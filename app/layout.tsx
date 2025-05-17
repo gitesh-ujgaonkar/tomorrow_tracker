@@ -11,8 +11,12 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Tomorrow Tracker",
   description: "Set and track your daily goals",
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
+
+// Force dynamic rendering for the entire app to avoid NextAuth SSR issues with React 19
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 export default function RootLayout({
   children,

@@ -9,12 +9,13 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  serverExternalPackages: ['next-auth'],
   // Disable static generation for pages that use authentication
   output: 'standalone',
-  // Configure React 19 compatibility
+  // Configure React 19 compatibility with NextAuth
   experimental: {
-    optimizePackageImports: ['next-auth'],
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
   },
 }
 
