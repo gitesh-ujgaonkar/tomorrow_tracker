@@ -14,18 +14,30 @@ declare module "next-auth" {
   }
 }
 
+// DEVELOPMENT ONLY: Use a hardcoded secret for testing
+// In production, this should be replaced with a proper environment variable
+const HARDCODED_SECRET = 'a_very_long_secret_key_for_development_testing_only_not_for_production_use';
+
 // Ensure we have a secret for NextAuth, even if environment variable is missing
 const getNextAuthSecret = () => {
-  if (!process.env.NEXTAUTH_SECRET) {
-    console.warn('NEXTAUTH_SECRET environment variable is not set. Using a fallback secret. This is NOT secure for production!');
-    // Use a consistent fallback secret for development only
-    return 'DEVELOPMENT_FALLBACK_SECRET_DO_NOT_USE_IN_PRODUCTION';
+  // For development and testing, use the hardcoded secret
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('Using hardcoded development secret');
+    return HARDCODED_SECRET;
   }
+  
+  // For production, use the environment variable
+  if (!process.env.NEXTAUTH_SECRET) {
+    console.warn('NEXTAUTH_SECRET environment variable is not set in production!');
+    // Fallback to hardcoded secret even in production as a last resort
+    return HARDCODED_SECRET;
+  }
+  
   return process.env.NEXTAUTH_SECRET;
 };
 
 export const authOptions: NextAuthOptions = {
-  debug: process.env.NODE_ENV === 'development',
+  debug: true, // Enable debug mode to see detailed logs
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days

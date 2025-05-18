@@ -60,8 +60,8 @@ export function RegisterForm() {
       // Short delay to ensure Firebase has completed the registration process
       await new Promise(resolve => setTimeout(resolve, 1000))
 
-      // Sign in the user with NextAuth
-      console.log("Attempting to sign in with NextAuth")
+      // Sign in the user using a direct approach
+      console.log("Using direct sign-in approach after registration")
       const result = await signIn("credentials", {
         email: values.email,
         password: values.password,
@@ -79,7 +79,7 @@ export function RegisterForm() {
           variant: "destructive",
         })
         // Redirect to login page if sign-in fails after registration
-        router.push("/login")
+        window.location.href = "/login"
         return
       }
 
@@ -89,9 +89,9 @@ export function RegisterForm() {
         description: "You're now signed in!",
       })
       
-      // Navigate to dashboard
-      router.push("/dashboard")
-      router.refresh()
+      // Use window.location for a full page refresh to ensure session is loaded
+      console.log("Redirecting to dashboard with full page refresh")
+      window.location.href = "/dashboard"
     } catch (error: any) {
       console.error("Registration error:", error)
       let errorMessage = error.message || "Failed to create account. Please try again."
