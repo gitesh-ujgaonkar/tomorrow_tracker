@@ -21,7 +21,20 @@ const checkEnvVariables = () => {
     if (typeof window !== 'undefined') {
       console.warn('Firebase initialization may fail due to missing environment variables.');
     }
+    return false;
   }
+  
+  // Log available environment variables for debugging
+  console.log('Firebase environment variables available:', {
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? 'Set' : 'Not set',
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ? 'Set' : 'Not set',
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ? 'Set' : 'Not set',
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ? 'Set' : 'Not set',
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID ? 'Set' : 'Not set',
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID ? 'Set' : 'Not set'
+  });
+  
+  return true;
 };
 
 // Call the check function
@@ -42,9 +55,32 @@ let auth: ReturnType<typeof getAuth> | null = null;
 let db: ReturnType<typeof getFirestore> | null = null;
 
 try {
-  app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+  // Check if Firebase is already initialized
+  if (getApps().length === 0) {
+    // Log the config we're using (without exposing sensitive values)
+    console.log('Initializing Firebase with config:', {
+      authDomain: firebaseConfig.authDomain,
+      projectId: firebaseConfig.projectId,
+      storageBucket: firebaseConfig.storageBucket,
+      messagingSenderId: firebaseConfig.messagingSenderId,
+      // Don't log API key or App ID for security reasons
+    });
+    
+    app = initializeApp(firebaseConfig);
+  } else {
+    app = getApp();
+    console.log('Using existing Firebase app');
+  }
+  
+  // Initialize auth and firestore
   auth = getAuth(app);
   db = getFirestore(app);
+  
+  // Verify initialization was successful
+  if (!auth || !db) {
+    throw new Error('Firebase services not properly initialized');
+  }
+  
   console.log('Firebase initialized successfully');
 } catch (error) {
   console.error('Error initializing Firebase:', error);

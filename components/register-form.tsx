@@ -44,8 +44,12 @@ export function RegisterForm() {
         description: "Please wait while we set up your account...",
       })
 
+      console.log("Starting user registration for:", values.email)
+
       // Create user in Firebase
-      await createUserWithEmailAndPassword(values.email, values.password, values.name)
+      const user = await createUserWithEmailAndPassword(values.email, values.password, values.name)
+      
+      console.log("User created successfully in Firebase:", user ? "Yes" : "No")
 
       // Show success toast
       toast({
@@ -53,17 +57,25 @@ export function RegisterForm() {
         description: "Your account has been created successfully!",
       })
 
-      // Sign in the user
+      // Short delay to ensure Firebase has completed the registration process
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      // Sign in the user with NextAuth
+      console.log("Attempting to sign in with NextAuth")
       const result = await signIn("credentials", {
         email: values.email,
         password: values.password,
         redirect: false,
+        callbackUrl: "/dashboard"
       })
 
+      console.log("NextAuth sign-in result:", result)
+
       if (result?.error) {
+        console.error("NextAuth sign-in error:", result.error)
         toast({
           title: "Sign-in Error",
-          description: result.error || "Failed to sign in after registration. Please try logging in manually.",
+          description: "Account created but couldn't sign you in automatically. Please try logging in manually.",
           variant: "destructive",
         })
         // Redirect to login page if sign-in fails after registration
@@ -76,13 +88,24 @@ export function RegisterForm() {
         title: "Success",
         description: "You're now signed in!",
       })
+      
+      // Navigate to dashboard
       router.push("/dashboard")
       router.refresh()
     } catch (error: any) {
       console.error("Registration error:", error)
+      let errorMessage = error.message || "Failed to create account. Please try again."
+      
+      // Provide more user-friendly error messages for common issues
+      if (errorMessage.includes("email-already-in-use")) {
+        errorMessage = "This email is already registered. Please use a different email or try signing in."
+      } else if (errorMessage.includes("network-request-failed")) {
+        errorMessage = "Network error. Please check your internet connection and try again."
+      }
+      
       toast({
         title: "Registration Error",
-        description: error.message || "Failed to create account. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {

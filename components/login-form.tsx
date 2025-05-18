@@ -12,6 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { ChromeIcon as Google } from "lucide-react"
+import { signInWithEmailAndPassword } from "@/lib/firebase/auth"
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -41,6 +42,40 @@ export function LoginForm() {
         description: "Verifying your credentials...",
       })
 
+      console.log("Attempting to sign in with email:", values.email)
+
+      // First try to authenticate with Firebase to verify credentials
+      try {
+        await signInWithEmailAndPassword(values.email, values.password)
+        console.log("Firebase authentication successful")
+      } catch (firebaseError: any) {
+        console.error("Firebase authentication error:", firebaseError)
+        
+        // Extract error message
+        let errorMessage = "Invalid email or password";
+        if (firebaseError.message) {
+          if (firebaseError.message.includes("user-not-found")) {
+            errorMessage = "No account found with this email. Please check your email or register.";
+          } else if (firebaseError.message.includes("wrong-password")) {
+            errorMessage = "Incorrect password. Please try again.";
+          } else if (firebaseError.message.includes("too-many-requests")) {
+            errorMessage = "Too many unsuccessful login attempts. Please try again later.";
+          } else if (firebaseError.message.includes("network-request-failed")) {
+            errorMessage = "Network error. Please check your internet connection.";
+          }
+        }
+        
+        toast({
+          title: "Login Failed",
+          description: errorMessage,
+          variant: "destructive",
+        })
+        setIsLoading(false)
+        return;
+      }
+
+      // Now sign in with NextAuth to create the session
+      console.log("Attempting to create NextAuth session")
       const result = await signIn("credentials", {
         email: values.email,
         password: values.password,
@@ -48,27 +83,14 @@ export function LoginForm() {
         callbackUrl: "/dashboard",
       })
 
+      console.log("NextAuth sign-in result:", result)
+
       if (result?.error) {
-        console.error("Login error:", result.error)
-        
-        // Provide specific error messages based on the error
-        let errorMessage = "Invalid email or password";
-        
-        if (result.error.includes("user-not-found")) {
-          errorMessage = "No account found with this email. Please check your email or register.";
-        } else if (result.error.includes("wrong-password")) {
-          errorMessage = "Incorrect password. Please try again.";
-        } else if (result.error.includes("too-many-requests")) {
-          errorMessage = "Too many unsuccessful login attempts. Please try again later.";
-        } else if (result.error.includes("network-request-failed")) {
-          errorMessage = "Network error. Please check your internet connection.";
-        } else if (result.error.includes("configuration-not-found")) {
-          errorMessage = "Authentication configuration error. Please contact support.";
-        }
+        console.error("NextAuth session error:", result.error)
         
         toast({
-          title: "Login Failed",
-          description: errorMessage,
+          title: "Session Error",
+          description: "Authentication successful, but there was an error creating your session. Please try again.",
           variant: "destructive",
         })
         return
@@ -80,7 +102,8 @@ export function LoginForm() {
         description: "You've been signed in successfully!",
       })
       
-      // Use router.push with { replace: true } to ensure a clean navigation
+      // Navigate to dashboard
+      console.log("Redirecting to dashboard")
       router.push("/dashboard")
       router.refresh()
     } catch (error: any) {
