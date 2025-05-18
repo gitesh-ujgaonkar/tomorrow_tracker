@@ -45,11 +45,24 @@ export function RegisterForm() {
       })
 
       console.log("Starting user registration for:", values.email)
+      console.log("Registration details:", {
+        email: values.email,
+        name: values.name,
+        passwordLength: values.password.length
+      })
 
       // Create user in Firebase
-      const user = await createUserWithEmailAndPassword(values.email, values.password, values.name)
-      
-      console.log("User created successfully in Firebase:", user ? "Yes" : "No")
+      try {
+        const user = await createUserWithEmailAndPassword(values.email, values.password, values.name)
+        console.log("User created successfully in Firebase:", {
+          uid: user?.uid,
+          email: user?.email,
+          displayName: user?.displayName
+        })
+      } catch (regError) {
+        console.error("Error during user creation:", regError)
+        throw regError; // Re-throw to be caught by the outer try/catch
+      }
 
       // Show success toast
       toast({

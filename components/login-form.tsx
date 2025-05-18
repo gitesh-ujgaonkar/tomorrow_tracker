@@ -62,6 +62,8 @@ export function LoginForm() {
         
         // Extract error message
         let errorMessage = "Invalid email or password";
+        let errorTitle = "Login Failed";
+        
         if (result.error.includes("user-not-found")) {
           errorMessage = "No account found with this email. Please check your email or register.";
         } else if (result.error.includes("wrong-password")) {
@@ -70,10 +72,16 @@ export function LoginForm() {
           errorMessage = "Too many unsuccessful login attempts. Please try again later.";
         } else if (result.error.includes("network-request-failed")) {
           errorMessage = "Network error. Please check your internet connection.";
+        } else if (result.error.includes("database")) {
+          errorTitle = "Database Error";
+          errorMessage = "There was an issue connecting to the database. Please try again later.";
+        } else {
+          // For any other errors, show the actual error message for debugging
+          errorMessage = `Authentication error: ${result.error}`;
         }
         
         toast({
-          title: "Login Failed",
+          title: errorTitle,
           description: errorMessage,
           variant: "destructive",
         })

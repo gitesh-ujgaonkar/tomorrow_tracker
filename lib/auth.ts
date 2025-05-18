@@ -55,20 +55,33 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.log("Missing credentials")
           return null
         }
 
         try {
+          console.log("Authorize function: Attempting to authenticate user:", credentials.email)
+          
           // Authenticate with Firebase
-          const userCredential = await signInWithEmailAndPassword(credentials.email, credentials.password)
+          try {
+            const userCredential = await signInWithEmailAndPassword(credentials.email, credentials.password)
+            console.log("Firebase authentication successful", userCredential.user.uid)
+          } catch (firebaseError) {
+            console.error("Firebase authentication failed:", firebaseError)
+            // Rethrow to be caught by the outer try/catch
+            throw firebaseError;
+          }
 
           // Get user data from Firestore
+          console.log("Getting user data from Firestore")
           const user = await getUserByEmail(credentials.email)
 
           if (!user) {
+            console.error("User not found in Firestore")
             throw new Error("User not found in database")
           }
 
+          console.log("User found in Firestore:", user.id)
           return {
             id: user.id,
             name: user.name,
@@ -76,8 +89,9 @@ export const authOptions: NextAuthOptions = {
             image: user.image,
           }
         } catch (error) {
-          console.error("Authentication error:", error)
-          return null
+          console.error("Authentication error in authorize function:", error)
+          // Instead of returning null, throw the error to provide better feedback
+          throw new Error(error instanceof Error ? error.message : "Authentication failed")
         }
       },
     }),

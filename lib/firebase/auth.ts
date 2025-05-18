@@ -68,18 +68,40 @@ export async function createUserWithEmailAndPassword(email: string, password: st
 
 export async function signInWithEmailAndPassword(email: string, password: string) {
   if (!auth) {
+    console.error("Firebase auth is not initialized");
     throw new Error("Firebase auth is not initialized. Please check your environment variables.")
   }
   
+  // Log Firebase auth state for debugging
+  console.log("Firebase auth state:", {
+    initialized: !!auth,
+    currentUser: auth.currentUser ? "Yes" : "No"
+  });
+  
   try {
-    console.log("Attempting to sign in user:", email);
+    console.log("Attempting to sign in user with Firebase:", email);
+    
+    // Attempt to sign in with Firebase
     const result = await firebaseSignIn(auth, email, password)
-    console.log("User signed in successfully:", result.user.uid);
+    
+    if (!result || !result.user) {
+      console.error("Firebase returned empty result");
+      throw new Error("Authentication failed: Empty response from Firebase");
+    }
+    
+    console.log("User signed in successfully with Firebase:", result.user.uid);
     return result
   } catch (error: any) {
-    console.error("Error signing in:", error)
+    console.error("Error signing in with Firebase:", error);
+    
+    // Enhanced error handling with more details
     const errorCode = error.code || '';
+    console.log("Firebase error code:", errorCode);
+    
     const errorMessage = getAuthErrorMessage(errorCode) || error.message || "Failed to sign in";
-    throw new Error(errorMessage)
+    console.log("Throwing error with message:", errorMessage);
+    
+    // Preserve the original error code in the error message for better debugging
+    throw new Error(`${errorMessage} (${errorCode})`)
   }
 }
