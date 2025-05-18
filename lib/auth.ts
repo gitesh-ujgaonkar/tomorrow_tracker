@@ -1,12 +1,34 @@
 import type { NextAuthOptions } from "next-auth"
+import type { DefaultSession } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google"
 import { signInWithEmailAndPassword } from "@/lib/firebase/auth"
 import { getUserByEmail, createUserFromGoogle } from "@/lib/firebase/firestore"
 
+// Extend the session user type to include the id property
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+    } & DefaultSession["user"];
+  }
+}
+
+// Ensure we have a secret for NextAuth, even if environment variable is missing
+const getNextAuthSecret = () => {
+  if (!process.env.NEXTAUTH_SECRET) {
+    console.warn('NEXTAUTH_SECRET environment variable is not set. Using a fallback secret. This is NOT secure for production!');
+    // Use a consistent fallback secret for development only
+    return 'DEVELOPMENT_FALLBACK_SECRET_DO_NOT_USE_IN_PRODUCTION';
+  }
+  return process.env.NEXTAUTH_SECRET;
+};
+
 export const authOptions: NextAuthOptions = {
+  debug: process.env.NODE_ENV === 'development',
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   providers: [
     GoogleProvider({
@@ -76,7 +98,11 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.id as string
+        // Ensure TypeScript knows we're adding an id property
+        session.user = {
+          ...session.user,
+          id: token.id as string
+        }
       }
 
       return session
@@ -86,5 +112,5 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
     error: "/login",
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: getNextAuthSecret(),
 }
