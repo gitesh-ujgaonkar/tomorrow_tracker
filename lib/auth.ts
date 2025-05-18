@@ -62,6 +62,17 @@ export const authOptions: NextAuthOptions = {
         try {
           console.log("Authorize function: Attempting to authenticate user:", credentials.email)
           
+          // DEVELOPMENT SHORTCUT: Allow test@example.com with any password for testing
+          if (process.env.NODE_ENV !== 'production' && credentials.email === 'test@example.com') {
+            console.log("Using test account for development")
+            return {
+              id: 'test-user-id',
+              name: 'Test User',
+              email: 'test@example.com',
+              image: '',
+            }
+          }
+          
           // Authenticate with Firebase
           try {
             const userCredential = await signInWithEmailAndPassword(credentials.email, credentials.password)

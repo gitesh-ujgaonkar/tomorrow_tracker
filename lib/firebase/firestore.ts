@@ -72,20 +72,35 @@ export async function createUser(user: User) {
 }
 
 export async function getUserByEmail(email: string) {
+  if (!db) {
+    console.error("Firestore database is not initialized")
+    throw new Error("Database connection error: Firestore is not initialized")
+  }
+  
   try {
+    console.log("Attempting to get user by email:", email)
+    
     const usersRef = collection(db, "users")
     const q = query(usersRef, where("email", "==", email))
-    const querySnapshot = await getDocs(q)
+    
+    try {
+      const querySnapshot = await getDocs(q)
+      
+      if (querySnapshot.empty) {
+        console.log("No user found with email:", email)
+        return null
+      }
 
-    if (querySnapshot.empty) {
-      return null
+      const userDoc = querySnapshot.docs[0]
+      console.log("User found:", userDoc.id)
+      return { id: userDoc.id, ...userDoc.data() } as User
+    } catch (firestoreError) {
+      console.error("Firestore query error:", firestoreError)
+      throw new Error(`Database query error: ${firestoreError.message || 'Failed to query Firestore'}`)
     }
-
-    const userDoc = querySnapshot.docs[0]
-    return { id: userDoc.id, ...userDoc.data() } as User
   } catch (error) {
     console.error("Error getting user by email:", error)
-    throw error
+    throw new Error(`Database error: ${error.message || 'Unknown database error'}`)
   }
 }
 
