@@ -45,6 +45,7 @@ export function LoginForm() {
         email: values.email,
         password: values.password,
         redirect: false,
+        callbackUrl: "/dashboard",
       })
 
       if (result?.error) {
@@ -79,6 +80,7 @@ export function LoginForm() {
         description: "You've been signed in successfully!",
       })
       
+      // Use router.push with { replace: true } to ensure a clean navigation
       router.push("/dashboard")
       router.refresh()
     } catch (error: any) {
