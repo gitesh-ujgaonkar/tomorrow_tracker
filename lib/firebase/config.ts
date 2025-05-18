@@ -43,13 +43,15 @@ const checkEnvVariables = () => {
 checkEnvVariables();
 
 // DEVELOPMENT FALLBACK CONFIG - DO NOT USE IN PRODUCTION
+// This is a placeholder configuration that won't work with real Firebase
+// It's only used to allow the app to initialize in development mode
 const devFallbackConfig = {
-  apiKey: "AIzaSyBOT4mp4VgpZ-wHzN-mxQoJ5VAhkXZNv_c",
-  authDomain: "tomorrow-tracker-dev.firebaseapp.com",
-  projectId: "tomorrow-tracker-dev",
-  storageBucket: "tomorrow-tracker-dev.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abcdef1234567890",
+  apiKey: "FIREBASE_API_KEY_PLACEHOLDER", // Not a real API key
+  authDomain: "example-app.firebaseapp.com",
+  projectId: "example-app",
+  storageBucket: "example-app.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "1:000000000000:web:0000000000000000",
 };
 
 // Get Firebase config, falling back to development config if needed
