@@ -5,8 +5,9 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/components/auth-provider"
 import { CookieConsentBanner } from "@/components/cookie-consent-banner"
-import { Analytics } from "@/components/analytics"
+import { Analytics } from "@/components"
 import { Providers } from "@/components/providers"
+import { ToastViewport } from "@/components/ui/toast"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -34,6 +35,7 @@ export default function RootLayout({
               {children}
               <CookieConsentBanner />
               <Analytics />
+              <ToastViewport className="fixed top-0 right-0 z-[100] w-full max-w-sm p-4" />
             </ThemeProvider>
           </AuthProvider>
         </Providers>
