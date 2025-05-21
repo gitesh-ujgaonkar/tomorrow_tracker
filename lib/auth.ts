@@ -37,11 +37,24 @@ const getNextAuthSecret = () => {
 };
 
 export const authOptions: NextAuthOptions = {
-  debug: true, // Enable debug mode to see detailed logs
+  debug: process.env.NODE_ENV === 'development', // Only enable debug in development
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  cookies: {
+    sessionToken: {
+      name: `__Secure-next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+        domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
+      },
+    },
+  },
+  useSecureCookies: process.env.NODE_ENV === 'production',
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,

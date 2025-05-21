@@ -3,14 +3,30 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { LoginForm } from "@/components/login-form"
 
-export default async function LoginPage() {
+interface LoginPageProps {
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
   console.log('Login page - getting server session...')
   const session = await getServerSession(authOptions)
   console.log('Login page - session:', JSON.stringify(session, null, 2))
+  
+  // Get the callback URL from query params or default to dashboard
+  const getCallbackUrl = () => {
+    if (!searchParams?.callbackUrl) return '/dashboard';
+    if (Array.isArray(searchParams.callbackUrl)) {
+      return searchParams.callbackUrl[0] || '/dashboard';
+    }
+    return searchParams.callbackUrl;
+  };
+  
+  const callbackUrl = getCallbackUrl();
+  const callbackUrlEncoded = encodeURIComponent(callbackUrl);
 
   if (session) {
-    console.log('Session found, redirecting to dashboard')
-    redirect("/dashboard")
+    console.log('Session found, redirecting to:', callbackUrl)
+    redirect(callbackUrl)
   }
 
   return (
@@ -20,7 +36,7 @@ export default async function LoginPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
           <p className="text-sm text-muted-foreground">Sign in to your account to continue</p>
         </div>
-        <LoginForm />
+        <LoginForm callbackUrl={callbackUrlEncoded} />
       </div>
     </div>
   )

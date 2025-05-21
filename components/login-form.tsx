@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { signIn } from "next-auth/react"
 import { z } from "zod"
@@ -19,10 +19,18 @@ const formSchema = z.object({
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 })
 
-export function LoginForm() {
+interface LoginFormProps {
+  callbackUrl?: string;
+}
+
+export function LoginForm({ callbackUrl: initialCallbackUrl }: LoginFormProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  
+  // Get the callback URL from props or query params or default to dashboard
+  const callbackUrl = initialCallbackUrl || searchParams?.get('callbackUrl') || '/dashboard'
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -52,7 +60,7 @@ export function LoginForm() {
         email: values.email,
         password: values.password,
         redirect: false,
-        callbackUrl: "/dashboard",
+        callbackUrl,
       })
 
       console.log("NextAuth sign-in result:", result)
@@ -95,8 +103,8 @@ export function LoginForm() {
       })
       
       // IMPORTANT: Use window.location for a full page refresh to ensure session is loaded
-      console.log("Redirecting to dashboard with full page refresh")
-      window.location.href = "/dashboard"
+      console.log("Redirecting to", callbackUrl, "with full page refresh")
+      window.location.href = callbackUrl
     } catch (error: any) {
       console.error("Login exception:", error)
       toast({
@@ -112,7 +120,7 @@ export function LoginForm() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
     try {
-      await signIn("google", { callbackUrl: "/dashboard" })
+      await signIn("google", { callbackUrl })
     } catch (error) {
       toast({
         title: "Error",

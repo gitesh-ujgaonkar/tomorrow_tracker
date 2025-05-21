@@ -10,14 +10,22 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Plus, Clock, Calendar, Trophy, CheckCircle } from "lucide-react"
 
-export default async function DashboardPage() {
+interface DashboardPageProps {
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   console.log('Dashboard page - getting server session...')
   const session = await getServerSession(authOptions)
   console.log('Dashboard page - session:', JSON.stringify(session, null, 2))
 
   if (!session) {
     console.log('No session found, redirecting to login')
-    redirect("/login")
+    const loginUrl = new URL('/login', 'http://localhost:3000')
+    if (searchParams) {
+      loginUrl.searchParams.set('callbackUrl', '/dashboard')
+    }
+    redirect(loginUrl.toString())
   }
 
   const today = new Date()
