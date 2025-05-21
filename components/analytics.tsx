@@ -16,7 +16,7 @@ export function Analytics() {
     // Only run on client side and if user has given consent
     if (typeof window === 'undefined' || !hasCookieConsent()) return;
 
-    const url = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    const url = `${pathname}${searchParams?.toString() ? `?${searchParams.toString()}` : ''}`;
     
     // Here you would typically send the pageview to your analytics service
     // For example, with Google Analytics:

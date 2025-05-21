@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/toast-provider"
 import { ChromeIcon as Google } from "lucide-react"
 import { signInWithEmailAndPassword } from "@/lib/firebase/auth"
 
@@ -47,7 +47,7 @@ export function LoginForm({ callbackUrl: initialCallbackUrl }: LoginFormProps) {
       // Show loading toast
       toast({
         title: "Signing in",
-        description: "Verifying your credentials...",
+        description: "Verifying your credentials..."
       })
 
       console.log("Attempting to sign in with email:", values.email)
@@ -91,7 +91,7 @@ export function LoginForm({ callbackUrl: initialCallbackUrl }: LoginFormProps) {
         toast({
           title: errorTitle,
           description: errorMessage,
-          variant: "destructive",
+          variant: "destructive"
         })
         return
       }
@@ -99,7 +99,7 @@ export function LoginForm({ callbackUrl: initialCallbackUrl }: LoginFormProps) {
       // Success toast
       toast({
         title: "Success",
-        description: "You've been signed in successfully!",
+        description: "You've been signed in successfully!"
       })
       
       // IMPORTANT: Use window.location for a full page refresh to ensure session is loaded
@@ -110,7 +110,7 @@ export function LoginForm({ callbackUrl: initialCallbackUrl }: LoginFormProps) {
       toast({
         title: "Login Error",
         description: error.message || "Something went wrong. Please try again.",
-        variant: "destructive",
+        variant: "destructive"
       })
     } finally {
       setIsLoading(false)
@@ -125,7 +125,7 @@ export function LoginForm({ callbackUrl: initialCallbackUrl }: LoginFormProps) {
       toast({
         title: "Error",
         description: "Failed to sign in with Google",
-        variant: "destructive",
+        variant: "destructive"
       })
     } finally {
       setIsLoading(false)
