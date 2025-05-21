@@ -109,40 +109,70 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user, account }) {
+      console.log("JWT callback - token:", token);
+      console.log("JWT callback - user:", user);
+      console.log("JWT callback - account:", account);
+
       // Initial sign in
       if (account && user) {
+        console.log("Initial sign in");
+        
         // For Google sign in, create or update user in Firestore
-        if (account.provider === "google" && user.email) {
-          const firestoreUser = await createUserFromGoogle({
-            email: user.email,
-            name: user.name || "",
-            image: user.image || "",
-          })
-
-          return {
-            ...token,
-            id: firestoreUser.id,
+        if (account.provider === "google") {
+          try {
+            console.log("Processing Google sign in");
+            const firestoreUser = await createUserFromGoogle({
+              email: user.email || "",
+              name: user.name || "",
+              image: user.image || "",
+            });
+            console.log("Google user created/updated in Firestore:", firestoreUser);
+            
+            return {
+              ...token,
+              id: firestoreUser.id,
+              name: user.name,
+              email: user.email,
+              image: user.image,
+            };
+          } catch (error) {
+            console.error("Error processing Google sign in:", error);
+            throw error;
           }
         }
 
+        // For credentials sign in
+        console.log("Processing credentials sign in");
         return {
           ...token,
           id: user.id,
-        }
+          name: user.name,
+          email: user.email,
+          image: user.image,
+        };
       }
 
-      return token
+      // For subsequent requests, return the existing token
+      console.log("Subsequent request, returning existing token");
+      return token;
     },
     async session({ session, token }) {
+      console.log("Session callback - session:", session);
+      console.log("Session callback - token:", token);
+      
       if (token && session.user) {
         // Ensure TypeScript knows we're adding an id property
         session.user = {
           ...session.user,
-          id: token.id as string
-        }
+          id: token.id as string,
+          name: token.name || session.user.name || null,
+          email: token.email || session.user.email || null,
+          image: token.image as string | null || session.user.image || null,
+        };
       }
-
-      return session
+      
+      console.log("Final session object:", session);
+      return session;
     },
   },
   pages: {

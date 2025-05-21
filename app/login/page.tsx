@@ -4,9 +4,12 @@ import { authOptions } from "@/lib/auth"
 import { LoginForm } from "@/components/login-form"
 
 export default async function LoginPage() {
+  console.log('Login page - getting server session...')
   const session = await getServerSession(authOptions)
+  console.log('Login page - session:', JSON.stringify(session, null, 2))
 
   if (session) {
+    console.log('Session found, redirecting to dashboard')
     redirect("/dashboard")
   }
 
