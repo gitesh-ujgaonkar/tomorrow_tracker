@@ -121,6 +121,12 @@ try {
       // Don't log API key or App ID for security reasons
     });
     
+    // Log if we're using the fallback config
+    if (firebaseConfig.apiKey === "FIREBASE_API_KEY_PLACEHOLDER") {
+      console.error('ERROR: Using fallback Firebase config in production environment');
+      console.error('Missing environment variables. Check Vercel environment variables.');
+    }
+    
     app = initializeApp(firebaseConfig);
   } else {
     app = getApp();
@@ -143,6 +149,7 @@ try {
     console.log('Firebase initialized successfully');
   } catch (firestoreError) {
     console.error('Error initializing Firestore:', firestoreError);
+    console.error('Firestore error details:', JSON.stringify(firestoreError));
     
     // For development only - use mock database if in development mode
     if (process.env.NODE_ENV !== 'production') {

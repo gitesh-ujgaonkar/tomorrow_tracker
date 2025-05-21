@@ -72,35 +72,50 @@ export async function createUser(user: User) {
 }
 
 export async function getUserByEmail(email: string) {
+  console.log("getUserByEmail called with:", email);
+  console.log("Database object status:", db ? "exists" : "null");
+  
   if (!db) {
-    console.error("Firestore database is not initialized")
-    throw new Error("Database connection error: Firestore is not initialized")
+    console.error("Firestore database is not initialized");
+    console.error("Environment check:", {
+      nodeEnv: process.env.NODE_ENV,
+      hasApiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? "yes" : "no",
+      hasProjectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ? "yes" : "no"
+    });
+    throw new Error("Database connection error: Firestore is not initialized");
   }
   
   try {
-    console.log("Attempting to get user by email:", email)
+    console.log("Attempting to get user by email:", email);
     
-    const usersRef = collection(db, "users")
-    const q = query(usersRef, where("email", "==", email))
+    const usersRef = collection(db, "users");
+    console.log("Collection reference created");
+    
+    const q = query(usersRef, where("email", "==", email));
+    console.log("Query created");
     
     try {
-      const querySnapshot = await getDocs(q)
+      console.log("Executing query...");
+      const querySnapshot = await getDocs(q);
+      console.log("Query executed successfully");
       
       if (querySnapshot.empty) {
-        console.log("No user found with email:", email)
-        return null
+        console.log("No user found with email:", email);
+        return null;
       }
 
-      const userDoc = querySnapshot.docs[0]
-      console.log("User found:", userDoc.id)
-      return { id: userDoc.id, ...userDoc.data() } as User
+      const userDoc = querySnapshot.docs[0];
+      console.log("User found:", userDoc.id);
+      return { id: userDoc.id, ...userDoc.data() } as User;
     } catch (firestoreError) {
-      console.error("Firestore query error:", firestoreError)
-      throw new Error(`Database query error: ${firestoreError.message || 'Failed to query Firestore'}`)
+      console.error("Firestore query error:", firestoreError);
+      console.error("Firestore query error details:", JSON.stringify(firestoreError));
+      throw new Error(`Database query error: ${firestoreError.message || 'Failed to query Firestore'}`);
     }
   } catch (error) {
-    console.error("Error getting user by email:", error)
-    throw new Error(`Database error: ${error.message || 'Unknown database error'}`)
+    console.error("Error getting user by email:", error);
+    console.error("Error details:", JSON.stringify(error));
+    throw new Error(`Database error: ${error.message || 'Unknown database error'}`);
   }
 }
 
