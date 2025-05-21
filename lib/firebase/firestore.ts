@@ -47,27 +47,48 @@ export interface UserSettings {
 
 // User functions
 export async function createUser(user: User) {
+  if (!db) {
+    console.error("Firestore database is not initialized when creating user");
+    throw new Error("Database connection error: Firestore is not initialized when creating user");
+  }
+  
   try {
-    const userRef = doc(db, "users", user.id)
-    await setDoc(userRef, {
-      ...user,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    })
+    console.log("Creating user document in Firestore for ID:", user.id);
+    console.log("User data:", JSON.stringify(user));
+    
+    // Check if Firestore is properly connected by attempting a simple operation
+    try {
+      const userRef = doc(db, "users", user.id);
+      console.log("User reference created successfully");
+      
+      // Attempt to write the user document
+      await setDoc(userRef, {
+        ...user,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      console.log("User document created successfully");
 
-    // Create default settings
-    await setDoc(doc(db, "userSettings", user.id), {
-      enableNotifications: true,
-      reminderTime: "21:00", // 9:00 PM
-      enableTimeBasedAlerts: true,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    })
+      // Create default settings
+      await setDoc(doc(db, "userSettings", user.id), {
+        enableNotifications: true,
+        reminderTime: "21:00", // 9:00 PM
+        enableTimeBasedAlerts: true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      console.log("User settings created successfully");
+    } catch (firestoreError: any) {
+      console.error("Firestore operation failed:", firestoreError);
+      console.error("Firestore error details:", JSON.stringify(firestoreError));
+      throw new Error(`Firestore operation failed: ${firestoreError.message || 'Unknown Firestore error'}`);
+    }
 
-    return user
+    return user;
   } catch (error) {
-    console.error("Error creating user:", error)
-    throw error
+    console.error("Error creating user:", error);
+    console.error("Error details:", JSON.stringify(error));
+    throw error;
   }
 }
 
