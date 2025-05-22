@@ -31,6 +31,18 @@ export function LoginForm({ callbackUrl: initialCallbackUrl }: LoginFormProps) {
   
   // Get the callback URL from props or query params or default to dashboard
   const callbackUrl = initialCallbackUrl || searchParams?.get('callbackUrl') || '/dashboard'
+  
+  // Ensure the callback URL is a valid path (not encoded)
+  const getValidCallbackUrl = (url: string) => {
+    try {
+      // If it's already a valid URL, return it
+      new URL(url);
+      return url;
+    } catch (e) {
+      // If it's not a valid URL, treat it as a path
+      return url.startsWith('/') ? url : `/${url}`;
+    }
+  }
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -103,8 +115,9 @@ export function LoginForm({ callbackUrl: initialCallbackUrl }: LoginFormProps) {
       })
       
       // IMPORTANT: Use window.location for a full page refresh to ensure session is loaded
-      console.log("Redirecting to", callbackUrl, "with full page refresh")
-      window.location.href = callbackUrl
+      const validCallbackUrl = getValidCallbackUrl(callbackUrl)
+      console.log("Redirecting to", validCallbackUrl, "with full page refresh")
+      window.location.href = validCallbackUrl
     } catch (error: any) {
       console.error("Login exception:", error)
       toast({
@@ -120,11 +133,13 @@ export function LoginForm({ callbackUrl: initialCallbackUrl }: LoginFormProps) {
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
     try {
-      await signIn("google", { callbackUrl })
+      const validCallbackUrl = getValidCallbackUrl(callbackUrl)
+      await signIn("google", { callbackUrl: validCallbackUrl })
     } catch (error) {
+      console.error("Google sign-in error:", error)
       toast({
         title: "Error",
-        description: "Failed to sign in with Google",
+        description: "Failed to sign in with Google. Please try again.",
         variant: "destructive"
       })
     } finally {
