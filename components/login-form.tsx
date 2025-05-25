@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { useToast } from "@/components/toast-provider"
+import { useToast } from "@/hooks/use-toast"
 import { ChromeIcon as Google } from "lucide-react"
 import { signInWithEmailAndPassword } from "@/lib/firebase/auth"
 
