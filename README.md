@@ -1,3 +1,7 @@
+# ⚠️ Notice
+
+We were facing errors in the previous codebase, so we created a new version from scratch. You can find the new version here: [https://github.com/gitesh-ujgaonkar/tomorrow-tracker-V02](https://github.com/gitesh-ujgaonkar/tomorrow-tracker-V02)
+
 # Tomorrow Tracker
 
 Tomorrow Tracker is a goal-setting and habit-tracking application designed to help users plan their days effectively. Set small daily goals, track your progress, and build lasting habits.
